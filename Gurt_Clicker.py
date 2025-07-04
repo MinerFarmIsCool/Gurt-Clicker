@@ -161,7 +161,6 @@ class Button(): # Written by Baraltech, edited slightly by me
 
 
 
-
 # Functions
 
 def player_clicked_gurt(player):
@@ -170,6 +169,50 @@ def player_clicked_gurt(player):
     new_money_balance = current_money_balance + current_money_per_click
     player.set_money_balance(new_money_balance)
     
+def gurt_shop(player):
+    #Setup for the buttons
+    plus_one_per_click_button = Button(image=None, pos=(640, 460), text_input="Increase Money Per Click by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
+    back_button = Button(image=None, pos=(640, 600), text_input="Back to Game", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
+
+    # Other setup
+    shopping = True
+
+    while shopping == True:
+        clock.tick(30)
+        mouse_pos = pygame.mouse.get_pos()  # Update mouse position each frame
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                shopping = False
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN: # Check to see if player presses escape
+                if event.key == pygame.K_ESCAPE:
+                    return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if plus_one_per_click_button.checkForInput(mouse_pos):
+                    # Add shop logic here
+                    pass
+                if back_button.checkForInput(mouse_pos):
+                    return
+
+        # Display
+        win.fill((255, 255, 255))
+        
+        # Draw shop title
+        shop_title = FONT.render("Gurt Shop", True, (0, 0, 0))
+        win.blit(shop_title, (600, 200))
+        
+        # Draw player money
+        player_money = FONT.render(f"Money: ${player.get_money_balance()}", True, (0, 0, 0))
+        win.blit(player_money, (600, 250))
+        
+        plus_one_per_click_button.changeColour(mouse_pos)
+        plus_one_per_click_button.update(win)
+        back_button.changeColour(mouse_pos)
+        back_button.update(win)
+        
+        pygame.display.flip()  # This was missing!
 
 
 
@@ -177,20 +220,13 @@ def player_clicked_gurt(player):
 
 # Main game function
 
-def gurt_clicker_game():
-    player = Player()
-    gurt = Gurt()
-    # Button crafting
-    shop_button_image = pygame.image.load("Assets/Shop Asset for Gurt Clicker (Not original work).png")
-    shop_button_image = pygame.transform.scale(shop_button_image, (128, 128))
-    shop_button = Button(image=shop_button_image, pos=(640, 460), text_input=None, font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
+def gurt_clicker_game(player, gurt, shop_button):
 
     running = True
     
     while running == True:
         clock.tick(FPS)
         mouse_pos = pygame.mouse.get_pos()
-
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -204,15 +240,13 @@ def gurt_clicker_game():
                 if gurt.check_for_input(mouse_pos):
                     player_clicked_gurt(player)
                 if shop_button.checkForInput(mouse_pos):
-                    running = False
+                    gurt_shop(player)
+                    return
     
         player_money_balance = player.get_money_balance()
 
-
-
         # Display setup
-        player_printable_balance = FONT.render(f"{player_money_balance}", True, (0, 0, 0)) 
-
+        player_printable_balance = FONT.render(f"${player_money_balance}", True, (0, 0, 0)) 
 
         # Display
         win.fill((255, 255, 255))
@@ -230,12 +264,25 @@ def gurt_clicker_game():
 
 # Main overall function
 
+def main_game_function():
+    #Object creation
+    gurt = Gurt()
+    player = Player()
+
+    # Button setup
+    shop_button_image = pygame.image.load("Assets/Shop Asset for Gurt Clicker (Not original work).png")
+    shop_button_image = pygame.transform.scale(shop_button_image, (128, 128))
+    shop_button = Button(image=shop_button_image, pos=(640, 460), text_input=None, font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
+
+
+
+    gurt_clicker_game(player, gurt, shop_button) 
 
 
 
 
 
-gurt_clicker_game()
+main_game_function()
 
 
 
