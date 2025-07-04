@@ -155,8 +155,35 @@ class Button(): # Written by Baraltech, edited slightly by me
 			self.text = self.font.render(self.text_input, True, self.base_colour)
                
 
+class Shop_Button(Button):
+    def __init__(self, image, pos, text_input, font, base_colour, hovering_colour, 
+    upgrade_price, upgrade_scaler, money_per_second_upgrade, money_per_click_upgrade):
 
+        super().__init__(image, pos, text_input, font, base_colour, hovering_colour)
+        self._upgrade_price = upgrade_price
+        self._upgrade_scaler = upgrade_scaler
+        self._money_per_second_upgrade = money_per_second_upgrade
+        self._money_per_click_upgrade = money_per_click_upgrade
+        self._failed_upgrade_colour = "Red"
 
+    def buy_upgrade(self, player):
+        player_money_balance = player.get_money_balance()
+        player_money_per_click = player.get_money_per_click()
+        player_money_per_second = player.get_money_per_second()
+        if player_money_balance >= self._upgrade_price:
+            player.set_money_balance(player_money_balance - self._upgrade_price)
+            self._upgrade_price = int(self._upgrade_price * self._upgrade_scaler)
+            player.set_money_per_click(player_money_per_click + self._money_per_click_upgrade)
+            player.set_money_per_second(player_money_per_second + self._money_per_second_upgrade)
+
+    def changeColour(self, position, player):
+        player_money_balance = player.get_money_balance()
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom) and player_money_balance >= self._upgrade_price:
+            self.text = self.font.render(self.text_input, True, self.hovering_colour)
+        elif position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom) and player_money_balance < self._upgrade_price:
+            self.text = self.font.render(self.text_input, True, self._failed_upgrade_colour)
+        else:
+            self.text = self.font.render(self.text_input, True, self.base_colour)
 
 
 
@@ -171,7 +198,7 @@ def player_clicked_gurt(player):
     
 def gurt_shop(player):
     #Setup for the buttons
-    plus_one_per_click_button = Button(image=None, pos=(640, 460), text_input="Increase Money Per Click by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
+    plus_one_per_click_button = Shop_Button(image=None, pos=(640, 460), text_input="Increase Money Per Click by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green", upgrade_price=10, upgrade_scaler=1.2, money_per_second_upgrade=0, money_per_click_upgrade=1)
     back_button = Button(image=None, pos=(640, 600), text_input="Back to Game", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
 
     # Other setup
@@ -191,7 +218,7 @@ def gurt_shop(player):
                     return
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if plus_one_per_click_button.checkForInput(mouse_pos):
-                    # Add shop logic here
+                    plus_one_per_click_button.buy_upgrade(player)
                     pass
                 if back_button.checkForInput(mouse_pos):
                     return
@@ -207,7 +234,7 @@ def gurt_shop(player):
         player_money = FONT.render(f"Money: ${player.get_money_balance()}", True, (0, 0, 0))
         win.blit(player_money, (600, 250))
         
-        plus_one_per_click_button.changeColour(mouse_pos)
+        plus_one_per_click_button.changeColour(mouse_pos, player)
         plus_one_per_click_button.update(win)
         back_button.changeColour(mouse_pos)
         back_button.update(win)
@@ -216,11 +243,9 @@ def gurt_shop(player):
 
 
 
-
-
 # Main game function
 
-def gurt_clicker_game(player, gurt, shop_button):
+def main_screen(player, gurt, shop_button):
 
     running = True
     
@@ -241,8 +266,8 @@ def gurt_clicker_game(player, gurt, shop_button):
                     player_clicked_gurt(player)
                 if shop_button.checkForInput(mouse_pos):
                     gurt_shop(player)
-                    return
-    
+
+
         player_money_balance = player.get_money_balance()
 
         # Display setup
@@ -276,7 +301,7 @@ def main_game_function():
 
 
 
-    gurt_clicker_game(player, gurt, shop_button) 
+    main_screen(player, gurt, shop_button) 
 
 
 
