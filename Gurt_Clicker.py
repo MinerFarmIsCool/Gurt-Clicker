@@ -6,6 +6,7 @@ import sys
 import abc
 import math
 import random
+from upgrade_data import Upgrade, U001
 #import your_MUM OHHH GODDEM
 
 pygame.init()
@@ -123,7 +124,6 @@ class Gurt(pygame.sprite.Sprite):
             self._rect.topleft = (int(self._x), int(self._y))
 
 
-
 class Button(): # Written by Baraltech, edited slightly by me
 	def __init__(self, image, pos, text_input, font, base_colour, hovering_colour):
 		self.image = image
@@ -155,35 +155,31 @@ class Button(): # Written by Baraltech, edited slightly by me
 			self.text = self.font.render(self.text_input, True, self.base_colour)
                
 
-class Shop_Button(Button):
+class Shop_Button(Button): # Also stores the data for the upgrade.
     def __init__(self, image, pos, text_input, font, base_colour, hovering_colour, 
-    upgrade_price, upgrade_scaler, money_per_second_upgrade, money_per_click_upgrade):
-
+    upgrade):
         super().__init__(image, pos, text_input, font, base_colour, hovering_colour)
-        self._upgrade_price = upgrade_price
-        self._upgrade_scaler = upgrade_scaler
-        self._money_per_second_upgrade = money_per_second_upgrade
-        self._money_per_click_upgrade = money_per_click_upgrade
         self._failed_upgrade_colour = "Red"
+        self._upgrade = upgrade
+        upgrade_price = self._upgrade.get_upgrade_price()
+        self.text = self.font.render(f"{self.text_input} (${upgrade_price})", True, self.base_colour)
+
 
     def buy_upgrade(self, player):
-        player_money_balance = player.get_money_balance()
-        player_money_per_click = player.get_money_per_click()
-        player_money_per_second = player.get_money_per_second()
-        if player_money_balance >= self._upgrade_price:
-            player.set_money_balance(player_money_balance - self._upgrade_price)
-            self._upgrade_price = int(self._upgrade_price * self._upgrade_scaler)
-            player.set_money_per_click(player_money_per_click + self._money_per_click_upgrade)
-            player.set_money_per_second(player_money_per_second + self._money_per_second_upgrade)
+        self._upgrade.apply_upgrade(player)
 
     def changeColour(self, position, player):
         player_money_balance = player.get_money_balance()
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom) and player_money_balance >= self._upgrade_price:
-            self.text = self.font.render(self.text_input, True, self.hovering_colour)
-        elif position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom) and player_money_balance < self._upgrade_price:
-            self.text = self.font.render(self.text_input, True, self._failed_upgrade_colour)
+        upgrade_price = self._upgrade.get_upgrade_price()
+        upgrade_level = int(self._upgrade.get_current_level)
+        display_text = f"{self.text_input} (${upgrade_price}) (L{upgrade_level})"
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom) and player_money_balance >= upgrade_price:
+            self.text = self.font.render(display_text, True, self.hovering_colour)
+        elif position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom) and player_money_balance < upgrade_price:
+            self.text = self.font.render(display_text, True, self._failed_upgrade_colour)
         else:
-            self.text = self.font.render(self.text_input, True, self.base_colour)
+            self.text = self.font.render(display_text, True, self.base_colour)
+
 
 
 
@@ -198,7 +194,7 @@ def player_clicked_gurt(player):
     
 def gurt_shop(player):
     #Setup for the buttons
-    plus_one_per_click_button = Shop_Button(image=None, pos=(640, 460), text_input="Increase Money Per Click by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green", upgrade_price=10, upgrade_scaler=1.2, money_per_second_upgrade=0, money_per_click_upgrade=1)
+    plus_one_per_click_button = Shop_Button(image=None, pos=(640, 460), text_input="Increase Money Per Click by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green", upgrade = U001)
     back_button = Button(image=None, pos=(640, 600), text_input="Back to Game", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
 
     # Other setup

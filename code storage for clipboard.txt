@@ -1,0 +1,9 @@
+def buy_upgrade(self, player):
+        player_money_balance = player.get_money_balance()
+        player_money_per_click = player.get_money_per_click()
+        player_money_per_second = player.get_money_per_second()
+        if player_money_balance >= self._upgrade_price:
+            player.set_money_balance(player_money_balance - self._upgrade_price)
+            self._upgrade_price = int(self._upgrade_price * self._upgrade_scaler)
+            player.set_money_per_click(player_money_per_click + self._money_per_click_upgrade)
+            player.set_money_per_second(player_money_per_second + self._money_per_second_upgrade)
