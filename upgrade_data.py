@@ -65,6 +65,7 @@ class Upgrade():
             self._upgrade_price = int(self._upgrade_price * self._upgrade_scaler)
             player.set_money_per_click(player_money_per_click + self._money_per_click_upgrade)
             player.set_money_per_second(player_money_per_second + self._money_per_second_upgrade)
+            self.increase_current_level()
 
 
 
@@ -93,4 +94,6 @@ U001 = Upgrade(
     is_leveled = True,
     max_level = 10^100
 )
+
+
 

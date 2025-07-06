@@ -171,7 +171,7 @@ class Shop_Button(Button): # Also stores the data for the upgrade.
     def changeColour(self, position, player):
         player_money_balance = player.get_money_balance()
         upgrade_price = self._upgrade.get_upgrade_price()
-        upgrade_level = int(self._upgrade.get_current_level)
+        upgrade_level = int(self._upgrade.get_current_level())
         display_text = f"{self.text_input} (${upgrade_price}) (L{upgrade_level})"
         if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom) and player_money_balance >= upgrade_price:
             self.text = self.font.render(display_text, True, self.hovering_colour)
@@ -295,17 +295,11 @@ def main_game_function():
     shop_button_image = pygame.transform.scale(shop_button_image, (128, 128))
     shop_button = Button(image=shop_button_image, pos=(640, 460), text_input=None, font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
 
-
-
     main_screen(player, gurt, shop_button) 
 
 
 
-
-
 main_game_function()
-
-
 
 
 
