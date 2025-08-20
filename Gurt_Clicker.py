@@ -6,7 +6,8 @@ import sys
 import abc
 import math
 import random
-from upgrade_data import Upgrade, U001
+import time
+from upgrade_data import Upgrades
 #import your_MUM OHHH GODDEM
 
 pygame.init()
@@ -18,6 +19,10 @@ win = pygame.display.set_mode((Screen_Width, Screen_Height))
 pygame.display.set_caption("Gurt Clicker")
 FONT = pygame.font.SysFont("comisans", 40)
 clock = pygame.time.Clock()
+
+# Timer system for events that happen every second
+last_second_time = time.time()
+current_second = int(last_second_time)
 
 
 # Colours for placeholder sprites
@@ -186,15 +191,49 @@ class Shop_Button(Button): # Also stores the data for the upgrade.
 
 # Functions
 
+def check_second_passed():
+    """Check if a second has passed and update the timer"""
+    global last_second_time, current_second
+    current_time = time.time()
+    if int(current_time) > current_second:
+        current_second = int(current_time)
+        last_second_time = current_time
+        return True
+    return False
+
+def handle_second_events(player):
+    """Handle events that should happen every second"""
+    # Add money per second
+    current_money_per_second = player.get_money_per_second()
+    for upgrade in Upgrades:
+        if upgrade._money_per_second_multiplier > 0:
+            current_money_per_second *= upgrade._money_per_second_multiplier
+    
+    current_balance = player.get_money_balance()
+    new_balance = current_balance + current_money_per_second
+    player.set_money_balance(new_balance)
+    
+    # You can add more events here that should happen every second
+    # For example:
+    # - Auto-save game
+    # - Update statistics
+    # - Check for achievements
+    # - etc.
+
 def player_clicked_gurt(player):
     current_money_balance = player.get_money_balance()
     current_money_per_click = player.get_money_per_click()
+    for upgrade in Upgrades:
+        if upgrade._money_per_click_multiplier > 0:
+            current_money_per_click *= upgrade._money_per_click_multiplier
     new_money_balance = current_money_balance + current_money_per_click
     player.set_money_balance(new_money_balance)
     
 def gurt_shop(player):
     #Setup for the buttons
-    plus_one_per_click_button = Shop_Button(image=None, pos=(640, 460), text_input="Increase Money Per Click by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green", upgrade = U001)
+    plus_one_per_click_button = Shop_Button(image=None, pos=(640, 460), text_input="Increase Money Per Click by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green", upgrade = Upgrades[0])
+    plus_one_per_second_button = Shop_Button(image=None, pos=(640, 560), text_input="Increase Money Per Second by 1", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green", upgrade = Upgrades[1])
+    plus_100_percent_gurt_per_second_button = Shop_Button(image=None, pos=(640, 660), text_input="Increase Money Per Second by 100%", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green", upgrade = Upgrades[2])
     back_button = Button(image=None, pos=(640, 600), text_input="Back to Game", font=pygame.font.SysFont("comisans", 40), base_colour="Black", hovering_colour="Green")
 
     # Other setup
@@ -203,6 +242,10 @@ def gurt_shop(player):
     while shopping == True:
         clock.tick(30)
         mouse_pos = pygame.mouse.get_pos()  # Update mouse position each frame
+        
+        # Check for second events (happens regardless of menu)
+        if check_second_passed():
+            handle_second_events(player)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -215,6 +258,12 @@ def gurt_shop(player):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if plus_one_per_click_button.checkForInput(mouse_pos):
                     plus_one_per_click_button.buy_upgrade(player)
+                    pass
+                if plus_one_per_second_button.checkForInput(mouse_pos):
+                    plus_one_per_second_button.buy_upgrade(player)
+                    pass
+                if plus_100_percent_gurt_per_second_button.checkForInput(mouse_pos):
+                    plus_100_percent_gurt_per_second_button.buy_upgrade(player)
                     pass
                 if back_button.checkForInput(mouse_pos):
                     return
@@ -230,8 +279,12 @@ def gurt_shop(player):
         player_money = FONT.render(f"Money: ${player.get_money_balance()}", True, (0, 0, 0))
         win.blit(player_money, (600, 250))
         
-        plus_one_per_click_button.changeColour(mouse_pos, player)
-        plus_one_per_click_button.update(win)
+        plus_one_per_click_button.changeColour(mouse_pos, player) 
+        plus_one_per_click_button.update(win) 
+        plus_one_per_second_button.changeColour(mouse_pos, player) # a
+        plus_one_per_second_button.update(win) # a
+        plus_100_percent_gurt_per_second_button.changeColour(mouse_pos, player) # a
+        plus_100_percent_gurt_per_second_button.update(win) # a
         back_button.changeColour(mouse_pos)
         back_button.update(win)
         
@@ -248,6 +301,10 @@ def main_screen(player, gurt, shop_button):
     while running == True:
         clock.tick(FPS)
         mouse_pos = pygame.mouse.get_pos()
+        
+        # Check for second events (happens regardless of menu)
+        if check_second_passed():
+            handle_second_events(player)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
